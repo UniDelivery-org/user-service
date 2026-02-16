@@ -62,6 +62,80 @@ Main application entry point:
 
 ---
 
+## UML Diagrams
+
+### High-Level Component Diagram
+
+```mermaid
+flowchart LR
+    clientApiGateway["Client / API Gateway"] -->|"HTTP (REST)"| userService["User Service"]
+    userService -->|"JWT validation"| keycloak[(Keycloak)]
+    userService -->|"JPA / SQL"| postgres[(PostgreSQL - unidelivery_user_db)]
+    userService -->|"Register"| eureka["Eureka Server"]
+```
+
+### Core Class Diagram
+
+```mermaid
+classDiagram
+    class UserController {
+      +register(request: RegisterRequest) ProfileResponse
+      +login(request: LoginRequest) AuthResponse
+      +getProfile(jwt: Jwt) ProfileResponse
+    }
+
+    class UserService {
+      +registerUser(request: RegisterRequest) ProfileResponse
+      +getUserProfile(keycloakId: String) ProfileResponse
+    }
+
+    class KeycloakService {
+      +createUser(request: RegisterRequest) String
+      +login(request: LoginRequest) AuthResponse
+    }
+
+    class UserRepository {
+      +existsByEmail(email: String) boolean
+      +existsByPhone(phone: String) boolean
+      +findByKeycloakId(id: String) Optional~User~
+    }
+
+    class User {
+      -UUID id
+      -String keycloakId
+      -String fullName
+      -String email
+      -String phone
+      -UserRole role
+      -VerificationStatus verificationStatus
+      -Boolean isOnline
+      -Boolean isBlocked
+      -Double currentLat
+      -Double currentLon
+      -String avatarUrl
+      -Instant createdAt
+      -Instant updatedAt
+    }
+
+    class RegisterRequest
+    class LoginRequest
+    class AuthResponse
+    class ProfileResponse
+
+    UserController --> UserService
+    UserController --> KeycloakService
+    UserService --> UserRepository
+    UserService --> User
+    UserService --> RegisterRequest
+    UserService --> ProfileResponse
+    KeycloakService --> RegisterRequest
+    KeycloakService --> LoginRequest
+    KeycloakService --> AuthResponse
+    UserRepository --> User
+```
+
+---
+
 ## Domain Model (User)
 
 The core entity is `User`:
