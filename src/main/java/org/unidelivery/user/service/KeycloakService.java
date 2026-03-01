@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.unidelivery.user.exception.InvalidCredentialsException;
 
 import java.util.*;
 
@@ -55,7 +56,7 @@ public class KeycloakService {
 
         } catch (Exception e) {
             log.error("Login failed for user: {}", request.getEmail(), e);
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
     }
 

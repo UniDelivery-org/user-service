@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .errorCode("USER_ALREADY_EXISTS")
-                .status(HttpStatus.CONFLICT.value())
+                .status(HttpStatus.CONFLICT)
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .errorCode("USER_NOT_FOUND")
-                .status(HttpStatus.NOT_FOUND.value())
+                .status(HttpStatus.NOT_FOUND)
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .errorCode("INVALID_CREDENTIALS")
-                .status(HttpStatus.UNAUTHORIZED.value())
+                .status(HttpStatus.UNAUTHORIZED)
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .message("Validation failed")
                 .errorCode("VALIDATION_ERROR")
-                .status(HttpStatus.BAD_REQUEST.value())
+                .status(HttpStatus.BAD_REQUEST)
                 .timestamp(LocalDateTime.now())
                 .details(details)
                 .build();
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .message("An unexpected error occurred")
                 .errorCode("INTERNAL_SERVER_ERROR")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .timestamp(LocalDateTime.now())
                 .details(List.of(ex.getMessage()))
                 .build();

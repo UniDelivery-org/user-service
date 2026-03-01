@@ -2,6 +2,7 @@ package org.unidelivery.user.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
 public class ErrorResponse {
     private String message;
     private String errorCode;
-    private int status;
+    private HttpStatus status;
     private LocalDateTime timestamp;
     private List<String> details;
 }
