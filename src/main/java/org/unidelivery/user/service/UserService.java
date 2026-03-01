@@ -2,6 +2,8 @@ package org.unidelivery.user.service;
 
 import org.unidelivery.user.dto.RegisterRequest;
 import org.unidelivery.user.dto.ProfileResponse;
+import org.unidelivery.user.exception.UserAlreadyExistsException;
+import org.unidelivery.user.exception.UserNotFoundException;
 import org.unidelivery.user.mapper.UserMapper;
 import org.unidelivery.user.model.User;
 import org.unidelivery.user.repository.UserRepository;
@@ -22,10 +24,10 @@ public class UserService {
     @Transactional
     public ProfileResponse registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("User with email " + request.getEmail() + " already exists");
         }
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new RuntimeException("Phone number already exists");
+            throw new UserAlreadyExistsException("User with phone " + request.getPhone() + " already exists");
         }
         String keycloakId = keycloakService.createUser(request);
 
@@ -40,7 +42,7 @@ public class UserService {
 
     public ProfileResponse getUserProfile(String keycloakId) {
         User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return mapper.toProfileResponse(user);
     }
