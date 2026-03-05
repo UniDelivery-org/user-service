@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.unidelivery.user.dto.UpdateProfileRequestDTO;
 import org.unidelivery.user.exception.InvalidCredentialsException;
 
 import java.util.*;
@@ -170,5 +171,59 @@ public class KeycloakService {
 
         restTemplate.exchange(userRolesUrl, HttpMethod.POST, roleEntity, Void.class);
         log.info("Assigned role {} to user {}", roleName, userId);
+    }
+    public void updateUser(String keycloakId, UpdateProfileRequestDTO request) {
+
+        String token = getAdminToken();
+
+        String url = properties.getKeycloakServerUrl()
+                + "/admin/realms/"
+                + properties.getRealm()
+                + "/users/"
+                + keycloakId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+
+        Map<String, Object> userData = new HashMap<>();
+
+        if (request.getEmail() != null) {
+            userData.put("email", request.getEmail());
+            userData.put("username", request.getEmail());
+        }
+
+        if (request.getFullName() != null) {
+            String[] nameParts = request.getFullName().trim().split("\\s+", 2);
+            userData.put("firstName", nameParts[0]);
+            userData.put("lastName", nameParts.length > 1 ? nameParts[1] : "");
+        }
+
+        Map<String, List<String>> attributes = new HashMap<>();
+
+        if (request.getPhone() != null) {
+            attributes.put("phone", List.of(request.getPhone()));
+        }
+
+        if (!attributes.isEmpty()) {
+            userData.put("attributes", attributes);
+        }
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(userData, headers);
+
+        try {
+            restTemplate.exchange(
+                    url,
+                    HttpMethod.PUT,
+                    entity,
+                    Void.class
+            );
+
+            log.info("Updated Keycloak user {}", keycloakId);
+
+        } catch (Exception e) {
+            log.error("Failed to update Keycloak user {}", keycloakId, e);
+            throw new RuntimeException("Failed to update Keycloak user");
+        }
     }
 }
