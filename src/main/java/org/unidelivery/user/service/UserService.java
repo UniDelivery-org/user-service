@@ -2,6 +2,7 @@ package org.unidelivery.user.service;
 
 import org.unidelivery.user.dto.RegisterRequest;
 import org.unidelivery.user.dto.ProfileResponse;
+import org.unidelivery.user.dto.UpdateProfileRequestDTO;
 import org.unidelivery.user.exception.UserAlreadyExistsException;
 import org.unidelivery.user.exception.UserNotFoundException;
 import org.unidelivery.user.mapper.UserMapper;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -41,9 +44,20 @@ public class UserService {
     }
 
     public ProfileResponse getUserProfile(String keycloakId) {
-        User user = userRepository.findByKeycloakId(keycloakId)
+        User keycloakUser = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        return mapper.toProfileResponse(keycloakUser);
+    }
+    public ProfileResponse getUserProfile(UUID userId) {
+        return mapper.toProfileResponse(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found")));
+    }
+    @Transactional
+    public ProfileResponse updateProfile(String keycloakId, UpdateProfileRequestDTO requestDTO) {
+        User user = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with this id: " + keycloakId));
+        keycloakService.updateUser(keycloakId, requestDTO);
+        mapper.updateEntityFromDto(requestDTO, user);
         return mapper.toProfileResponse(user);
     }
 }
