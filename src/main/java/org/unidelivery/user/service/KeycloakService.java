@@ -13,6 +13,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.unidelivery.user.dto.UpdateProfileRequestDTO;
 import org.unidelivery.user.exception.InvalidCredentialsException;
+import org.unidelivery.user.model.User;
 
 import java.util.*;
 
@@ -181,12 +182,20 @@ public class KeycloakService {
                 + properties.getRealm()
                 + "/users/"
                 + keycloakId;
-
+        log.info("Updating Keycloak user with ID: {}", keycloakId);
+        log.info("Updating Keycloak user: {}", request);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
 
-        Map<String, Object> userData = new HashMap<>();
+        ResponseEntity<Map> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                Map.class
+        );
+
+        Map<String, Object> userData = response.getBody();
 
         if (request.getEmail() != null) {
             userData.put("email", request.getEmail());

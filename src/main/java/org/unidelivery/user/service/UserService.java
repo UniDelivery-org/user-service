@@ -56,8 +56,8 @@ public class UserService {
     public ProfileResponse updateProfile(String keycloakId, UpdateProfileRequestDTO requestDTO) {
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with this id: " + keycloakId));
-        keycloakService.updateUser(keycloakId, requestDTO);
         mapper.updateEntityFromDto(requestDTO, user);
+        keycloakService.updateUser(keycloakId, requestDTO);
         return mapper.toProfileResponse(user);
     }
 }

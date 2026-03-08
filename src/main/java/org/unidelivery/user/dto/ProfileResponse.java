@@ -22,4 +22,5 @@ public class ProfileResponse {
     private Double currentLon;
     private String avatarUrl;
     private Instant createdAt;
+    private Instant updatedAt;
 }
