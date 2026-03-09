@@ -1,5 +1,7 @@
 package org.unidelivery.user.service;
 
+import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerProperties;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.unidelivery.user.config.KeycloakProperties;
 import org.unidelivery.user.dto.LoginRequest;
 import org.unidelivery.user.dto.AuthResponse;
@@ -13,7 +15,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.unidelivery.user.dto.UpdateProfileRequestDTO;
 import org.unidelivery.user.exception.InvalidCredentialsException;
-import org.unidelivery.user.model.User;
 
 import java.util.*;
 
@@ -59,6 +60,82 @@ public class KeycloakService {
         } catch (Exception e) {
             log.error("Login failed for user: {}", request.getEmail(), e);
             throw new InvalidCredentialsException("Invalid email or password");
+        }
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+
+        String tokenUrl = properties.getKeycloakServerUrl()
+                + "/realms/"
+                + properties.getRealm()
+                + "/protocol/openid-connect/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("client_id", properties.getClientId());
+        body.add("client_secret", properties.getClientSecret());
+        body.add("grant_type", "refresh_token");
+        body.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+        try {
+
+            ResponseEntity<Map> response =
+                    restTemplate.postForEntity(tokenUrl, requestEntity, Map.class);
+
+            Map<String, Object> responseBody = response.getBody();
+
+            AuthResponse authResponse = new AuthResponse();
+            authResponse.setAccessToken((String) responseBody.get("access_token"));
+            authResponse.setTokenType((String) responseBody.get("token_type"));
+            authResponse.setExpiresIn(((Number) responseBody.get("expires_in")).longValue());
+            authResponse.setRefreshToken((String) responseBody.get("refresh_token"));
+
+            log.info("Token refreshed successfully");
+
+            return authResponse;
+
+        } catch (Exception e) {
+            log.error("Refresh token failed", e);
+            throw new RuntimeException("Invalid refresh token");
+        }
+    }
+
+    public void deleteProfile(String keycloakId) {
+
+        String token = getAdminToken();
+
+        String url = properties.getKeycloakServerUrl()
+                + "/admin/realms/"
+                + properties.getRealm()
+                + "/users/"
+                + keycloakId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        try {
+
+            restTemplate.exchange(
+                    url,
+                    HttpMethod.DELETE,
+                    requestEntity,
+                    Void.class
+            );
+
+            log.info("User deleted successfully from Keycloak: {}", keycloakId);
+
+        } catch (Exception e) {
+
+            log.error("Failed to delete user from Keycloak: {}", keycloakId, e);
+
+            throw new RuntimeException("Failed to delete profile");
         }
     }
 
