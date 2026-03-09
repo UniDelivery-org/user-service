@@ -1,6 +1,11 @@
 package org.unidelivery.user.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.server.ResponseStatusException;
 import org.unidelivery.user.dto.*;
+import org.unidelivery.user.exception.InvalidCredentialsException;
 import org.unidelivery.user.service.KeycloakService;
 import org.unidelivery.user.service.UserService;
 import jakarta.validation.Valid;
@@ -11,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,16 +39,43 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
-        String keycloakId = jwt.getSubject();
+    public ResponseEntity<ProfileResponse> getProfile(JwtAuthenticationToken jwt) {
+        if (jwt== null) {
+            throw new InvalidCredentialsException("Missing or invalid token");
+        }
+        String keycloakId = jwt.getToken().getSubject();
         ProfileResponse profile = userService.getUserProfile(keycloakId);
+
         return ResponseEntity.ok(profile);
     }
-    @PutMapping("/update")
-    public ResponseEntity<ProfileResponse> updateProfile(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody UpdateProfileRequestDTO request) {
-        String keycloakId = jwt.getSubject();
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProfileResponse> updateProfile(JwtAuthenticationToken jwt,@Valid @ModelAttribute UpdateProfileRequestDTO request) {
+        if (jwt== null) {
+            throw new InvalidCredentialsException("Missing or invalid token");
+        }
+        String keycloakId = jwt.getToken().getSubject();
         ProfileResponse profile = userService.updateProfile(keycloakId, request);
         return ResponseEntity.ok(profile);
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody Map<String, String> request) {
+
+        String refreshToken = request.get("refreshToken");
+
+        AuthResponse response = keycloakService.refreshToken(refreshToken);
+
+        return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteProfile(JwtAuthenticationToken jwt) {
+        if (jwt== null) {
+            throw new InvalidCredentialsException("Missing or invalid token");
+        }
+        String keycloakId = jwt.getToken().getSubject();
+
+        keycloakService.deleteProfile(keycloakId);
+        userService.deleteProfile(keycloakId);
+        return ResponseEntity.ok("Profile deleted successfully");
     }
     @GetMapping("{id}")
     public ResponseEntity<ProfileResponse> getUserProfile(@PathVariable UUID id) {
