@@ -1,5 +1,6 @@
 package org.unidelivery.user.service;
 
+import org.mapstruct.control.MappingControl;
 import org.unidelivery.user.dto.RegisterRequest;
 import org.unidelivery.user.dto.ProfileResponse;
 import org.unidelivery.user.dto.UpdateProfileRequestDTO;
@@ -22,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final KeycloakService keycloakService;
+    private final FileStorageService fileStorageService;
     private final UserMapper mapper;
 
     @Transactional
@@ -57,7 +59,18 @@ public class UserService {
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with this id: " + keycloakId));
         mapper.updateEntityFromDto(requestDTO, user);
+        if (requestDTO.isDeleteAvatar()) {
+            user.setAvatarUrl(null);
+        }
+        else if (requestDTO.getAvatar() != null && !requestDTO.getAvatar().isEmpty()) {
+            String avatarUrl = fileStorageService.storeAvatar(requestDTO.getAvatar());
+            user.setAvatarUrl(avatarUrl);
+        }
         keycloakService.updateUser(keycloakId, requestDTO);
         return mapper.toProfileResponse(user);
+    }
+    public void deleteProfile(String keycloakId) {
+        User user = userRepository.findByKeycloakId(keycloakId).orElseThrow(() -> new UserNotFoundException("User not found with this id: " + keycloakId));
+        userRepository.delete(user);
     }
 }
