@@ -77,8 +77,16 @@ public class UserController {
         userService.deleteProfile(keycloakId);
         return ResponseEntity.ok("Profile deleted successfully");
     }
-    @GetMapping("{id}")
+    @GetMapping("/shared/{id}")
     public ResponseEntity<ProfileResponse> getUserProfile(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserProfile(id));
+    }
+    @GetMapping("/shared/courier/count")
+    public ResponseEntity<Long> getCouriersCount() {
+        return ResponseEntity.ok(userService.getTotalCouriersCount());
+    }
+    @GetMapping("/shared/sender/count")
+    public ResponseEntity<Long> getSendersCount() {
+        return ResponseEntity.ok(userService.getTotalSendersCount());
     }
 }

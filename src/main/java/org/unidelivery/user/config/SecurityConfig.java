@@ -26,21 +26,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors
-                        .configurationSource(request -> {
-                            CorsConfiguration config = new CorsConfiguration();
-                            config.setAllowedOrigins(List.of("http://localhost:65487"));
-                            config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-                            config.setAllowedHeaders(List.of("*"));
-                            config.setAllowCredentials(true);
-                            return config;
-                        })
-                )
+//                .cors(cors -> cors
+//                        .configurationSource(request -> {
+//                            CorsConfiguration config = new CorsConfiguration();
+//                            config.setAllowedOrigins(List.of("http://localhost:65487"));
+//                            config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+//                            config.setAllowedHeaders(List.of("*"));
+//                            config.setAllowCredentials(true);
+//                            return config;
+//                        })
+//                )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login", "/api/v1/users/{id}").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login", "/api/v1/users/shared/**", "/api/v1/users/refresh", "/actuator/**", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -54,16 +52,16 @@ public class SecurityConfig {
 
         return http.build();
     }
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:65487")); // allow your frontend
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // apply to all paths
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(List.of("http://localhost:65487")); // allow your frontend
+//        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(List.of("*"));
+//        configuration.setAllowCredentials(true);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration); // apply to all paths
+//        return source;
+//    }
 }

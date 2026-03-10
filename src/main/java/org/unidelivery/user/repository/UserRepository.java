@@ -21,4 +21,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByPhone(String phone);
     List<User> findByRoleAndVerificationStatus(UserRole role, VerificationStatus status);
+    long countByRole(UserRole role);
 }

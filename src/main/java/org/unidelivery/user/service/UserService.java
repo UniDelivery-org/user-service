@@ -8,6 +8,7 @@ import org.unidelivery.user.exception.UserAlreadyExistsException;
 import org.unidelivery.user.exception.UserNotFoundException;
 import org.unidelivery.user.mapper.UserMapper;
 import org.unidelivery.user.model.User;
+import org.unidelivery.user.model.UserRole;
 import org.unidelivery.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,5 +73,11 @@ public class UserService {
     public void deleteProfile(String keycloakId) {
         User user = userRepository.findByKeycloakId(keycloakId).orElseThrow(() -> new UserNotFoundException("User not found with this id: " + keycloakId));
         userRepository.delete(user);
+    }
+    public long getTotalSendersCount() {
+        return userRepository.countByRole(UserRole.SENDER);
+    }
+    public long getTotalCouriersCount() {
+        return userRepository.countByRole(UserRole.COURIER);
     }
 }
