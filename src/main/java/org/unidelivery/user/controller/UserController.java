@@ -1,19 +1,18 @@
 package org.unidelivery.user.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.server.ResponseStatusException;
 import org.unidelivery.user.dto.*;
 import org.unidelivery.user.exception.InvalidCredentialsException;
+import org.unidelivery.user.model.UserRole;
 import org.unidelivery.user.service.KeycloakService;
 import org.unidelivery.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -88,5 +87,21 @@ public class UserController {
     @GetMapping("/shared/sender/count")
     public ResponseEntity<Long> getSendersCount() {
         return ResponseEntity.ok(userService.getTotalSendersCount());
+    }
+    @GetMapping("/admin")
+    public Page<ProfileResponse> getAllUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) UserRole role,
+            Pageable pageable
+    ) {
+        return userService.getAllUsers(search, role, pageable);
+    }
+    @PutMapping("/admin/{userId}/block")
+    public ProfileResponse blockUser(@PathVariable UUID userId, @RequestBody(required = false) String reason) {
+        return userService.blockUser(userId, reason);
+    }
+    @PutMapping("/admin/{userId}/unblock")
+    public ProfileResponse unblockUser(@PathVariable UUID userId) {
+        return userService.unblockUser(userId);
     }
 }
