@@ -274,11 +274,6 @@ public class KeycloakService {
 
         Map<String, Object> userData = response.getBody();
 
-        if (request.getEmail() != null) {
-            userData.put("email", request.getEmail());
-            userData.put("username", request.getEmail());
-        }
-
         if (request.getFullName() != null) {
             String[] nameParts = request.getFullName().trim().split("\\s+", 2);
             userData.put("firstName", nameParts[0]);
