@@ -1,6 +1,8 @@
 package org.unidelivery.user.service;
 
 import org.mapstruct.control.MappingControl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.unidelivery.user.dto.RegisterRequest;
 import org.unidelivery.user.dto.ProfileResponse;
 import org.unidelivery.user.dto.UpdateProfileRequestDTO;
@@ -79,5 +81,47 @@ public class UserService {
     }
     public long getTotalCouriersCount() {
         return userRepository.countByRole(UserRole.COURIER);
+    }
+    @Transactional(readOnly = true)
+    public Page<ProfileResponse> getAllUsers(String search, UserRole role, Pageable pageable) {
+        Page<User> users;
+
+        if (role != null && search != null && !search.isBlank()) {
+
+            users = userRepository
+                    .findByRoleAndFullNameContainingIgnoreCaseOrRoleAndEmailContainingIgnoreCase(
+                            role, search, role, search, pageable);
+
+        } else if (role != null) {
+
+            users = userRepository.findByRole(role, pageable);
+
+        } else if (search != null && !search.isBlank()) {
+
+            users = userRepository
+                    .findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            search, search, pageable);
+
+        } else {
+
+            users = userRepository.findAll(pageable);
+        }
+        return users.map(mapper::toProfileResponse);
+    }
+    @Transactional
+    public ProfileResponse blockUser(UUID userId, String reason) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        user.setIsBlocked(true);
+        User savedUser = userRepository.save(user);
+        return mapper.toProfileResponse(savedUser);
+    }
+    @Transactional
+    public ProfileResponse unblockUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        user.setIsBlocked(false);
+        User savedUser = userRepository.save(user);
+        return mapper.toProfileResponse(savedUser);
     }
 }
