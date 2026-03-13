@@ -10,10 +10,6 @@ public class UpdateProfileRequestDTO {
     @Size(min = 2, max = 255, message = "Full name must be between 2 and 255 characters")
     private String fullName;
 
-    @Email(message = "Invalid email format")
-    private String email;
-
-    @NotBlank(message = "Phone is required")
     @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format")
     private String phone;
 
@@ -27,4 +23,5 @@ public class UpdateProfileRequestDTO {
     @DecimalMin(value = "-180.0", message = "Longitude must be >= -180")
     @DecimalMax(value = "180.0", message = "Longitude must be <= 180")
     private Double currentLon;
+    private Boolean isOnline;
 }
