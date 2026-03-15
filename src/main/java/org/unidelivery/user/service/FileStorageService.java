@@ -11,8 +11,6 @@ import java.util.UUID;
 
 @Service
 public class FileStorageService {
-
-
     public String storeAvatar(MultipartFile file) {
         String uploadDir = "uploads/avatars/";
         try {
