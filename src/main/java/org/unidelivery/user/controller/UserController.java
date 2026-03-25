@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.unidelivery.user.dto.*;
+import org.unidelivery.user.exception.BlockedUserException;
 import org.unidelivery.user.exception.InvalidCredentialsException;
 import org.unidelivery.user.model.UserRole;
 import org.unidelivery.user.service.KeycloakService;
@@ -45,6 +46,7 @@ public class UserController {
         String keycloakId = jwt.getToken().getSubject();
         ProfileResponse profile = userService.getUserProfile(keycloakId);
 
+        if (profile.getIsBlocked()) throw new BlockedUserException("Your account has been blocked");
         return ResponseEntity.ok(profile);
     }
     @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

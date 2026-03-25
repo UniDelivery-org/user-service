@@ -1,6 +1,7 @@
 package org.unidelivery.user.security;
 
 import org.unidelivery.user.dto.ErrorResponse;
+import org.unidelivery.user.exception.BlockedUserException;
 import org.unidelivery.user.exception.InvalidCredentialsException;
 import org.unidelivery.user.exception.UserAlreadyExistsException;
 import org.unidelivery.user.exception.UserNotFoundException;
@@ -38,6 +39,17 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BlockedUserException.class)
+    public ResponseEntity<ErrorResponse> handleBlockedUser(BlockedUserException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode("USER_BLOCKED")
+                .status(HttpStatus.CONFLICT)
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
